@@ -4,11 +4,110 @@ User guide for the C3+3 Falcon HPC system, markdown format.
 
 ## Getting started
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+It's possible to connect to Falcon through the traditional command line interface or through the Open OnDemand web interface, which is recommended, by pointing a browser to https://ondemand.c3plus3.org and providing your multifactor credentials. 
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+Select a desktop or terminal session, based on your needs.
 
-## Add your files
+## The LMOD module system
+
+Falcon uses the lua-based LMOD module system. If you are already familiar with TCL modules a.k.a. 'environment modules' then LMOD will mostly be familiar. If you have developed your own modules in TCL, rest assured knowing that you will still be able to write and use these under LMOD. The primary feature of LMOD is the use of module hierarchies, which exist primarily to organize large module sets keep users from inadvertently loading incompatible modules. 
+
+On Falcon, we use LMOD to support a two-tier hierarchy: Compilers are the first tier and MPI is the second tier. Specifically, we support gcc and Intel compilers, and the MPICH and OpenMPI implementations of MPI. What this means is that you will only be able to have one compiler and one MPI implementation loaded at any given time. Further, with a given compiler/MPI combination loaded, only modules built with that combination will be visible for loading.
+
+For example, starting with a clean module environment, let's tell LMOD to use the directory containing Core modules and see what we get access to:
+
+```
+$ module purge
+$ module use /lfs/software/modules/Core
+$ module avail
+
+----------------------------------------------------------------------------------------------------- /lfs/software/modules/Core ------------------------------------------------------------------------------------------------------
+   gcc/12.1.0    intel/2021.4.0
+
+```
+
+Note that see only the compilers. Selecting gcc, and running again, we still see the available compilers, plus the packages built with those compilers, including the MPICH and OpenMPI packages:
+
+```
+$ module load gcc
+$ module avail
+-------------------------------------------------------------------------------------------------- /lfs/software/modules/gcc/12.1.0 ---------------------------------------------------------------------------------------------------
+   autodock/4.2.6    fastStructure/1.0    mpich/3.4.3    openmpi/4.1.3    
+
+----------------------------------------------------------------------------------------------------- /lfs/software/modules/Core ------------------------------------------------------------------------------------------------------
+   gcc/12.1.0 (L)    intel/2021.4.0
+```
+
+Going one step further, we load the mpich module and again inspect what modules are available:
+
+```
+$ module load mpich
+$ module avail 
+
+-------------------------------------------------------------------------------------------- /lfs/software/modules/mpich/3.4.3/gcc/12.1.0 ---------------------------------------------------------------------------------------------
+   fftw/3.3.10       hdf5/1.12.2    lammps/20220107    netcdf-c/4.8.1          opencoarrays/2.10.0    parallel-netcdf/1.12.2    wps/4.3.1 (D)
+   gromacs/2022.2    icar/2.0       namd/2.14          netcdf-fortran/4.5.4    openfoam/2112          vasp/5.4.4.pl2            wrf/4.3.3
+
+-------------------------------------------------------------------------------------------------- /lfs/software/modules/gcc/12.1.0 ---------------------------------------------------------------------------------------------------
+   autodock/4.2.6    fastStructure/1.0    mpich/3.4.3 (L)    openmpi/4.1.3
+
+----------------------------------------------------------------------------------------------------- /lfs/software/modules/Core ------------------------------------------------------------------------------------------------------
+   gcc/12.1.0 (L)    intel/2021.4.0
+```
+
+We now see that a number of packages are available which are built with the gcc/mpich combination stack. Let's load a couple of these modules:
+
+```
+$ module load hdf5 gromacs
+$ module list
+
+Currently Loaded Modules:
+  1) gcc/12.1.0   2) mpich/3.4.3   3) hdf5/1.12.2   4) fftw/3.3.10   5) gromacs/2022.2
+
+```
+
+Loading the gromacs caused the fftw module to be loaded automatically, since it's needed by GROMACS. Where it gets interesting is when we switch components, e.g. if we swap the gcc compiler for the Intel compiler:
+
+```
+$ module load intel
+
+Lmod is automatically replacing "gcc/12.1.0" with "intel/2021.4.0".
+
+Inactive Modules:
+  1) gromacs
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) fftw/3.3.10     2) hdf5/1.12.2     3) mpich/3.4.3
+
+```
+
+What happened here? Why is GROMACS now inactive, and what does it mean that the other modules have been reloaded? Let's first examine our current module state:
+
+```
+$ module list
+
+Currently Loaded Modules:
+  1) intel/2021.4.0   2) mpich/3.4.3   3) hdf5/1.12.2   4) fftw/3.3.10
+
+Inactive Modules:
+  1) gromacs
+
+```
+
+Here is what's going on. 
+- There is no build of GROMACS with the Intel compiler, it's just not supported, so in switching compilers, there's no module for that combination, and LMOD marks it inactive. If you find yourself switching back and forth between module environments, you will find this helpful, instead of having to unload and reload modules every time you switch.
+- The gcc compiler is no longer loaded, because we asked for the Intel compiler, and we're only allowed to have one compiler loaded at a time. This helps to prevents us from building or loading Frankenstein software stacks with diffent components compiled with different compilers (and MPIs). 
+- The other modules we had loaded still appear, but LMOD has quietly replaced them with the versions of those packages built with the Intel compiler. Note I say quietly, not silently, as LMOD does mention that it is reloading them.
+
+
+That's the whirlwind tour of LMOD and modules on Falcon. Play with it until you're comfortable with it, you can't break anything. You can always `module purge` or simply log out and back in if it really gets muddy.  For the curious, there's more info about LMOD [here](https://lmod.readthedocs.io/en/latest/010_user.html).
+
+Cheers and happy module-ing!
+
+--The Admin Team
+
+---
+---
 
 - [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
 - [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
