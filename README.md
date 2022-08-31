@@ -159,7 +159,7 @@ Once you've perfected your script and are reasonably sure it is behaving as you 
 #SBATCH --job-name=big_science
 #SBATCH --partition=long
 #SBATCH --cpus-per-task=1
-#SBATCH --nodes=128
+#SBATCH --nodes=1
 #SBATCH --ntasks-per-node=4
 #SBATCH -t 1:00:00 # run time (hh:mm:ss)
 #SBATCH -o test-results-%j # output and error file name (%j expands to jobID)
@@ -167,7 +167,7 @@ Once you've perfected your script and are reasonably sure it is behaving as you 
 module load gcc mpich
 
 echo "Dumping lists of hosts: "
-mpirun -n 128 hostname
+mpirun -n 4 hostname
 echo "--------"
 
 echo
@@ -175,7 +175,7 @@ echo
 echo "Preparing run:"
 date
 
-mpirun -n 128 /path/to/my_mpi_executable
+mpirun -n 4 /path/to/my_mpi_executable
 
 echo "Run complete."
 date
