@@ -141,7 +141,12 @@ Cheers and happy module-ing!
 ## Running interactive jobs
 
 
-Falcon uses the slurm resource manager to meet the needs of multiple users sharing resources on the system. In it's simplest invocation, slurm can be called up to schedule an interactive job, wherein a user is able to allocate one or more compute nodes. For example, the following one liner can used to launch a bash shell on a compute node: ` srun --nodes=1 --ntasks-per-node=1 --time=01:00:00 --pty bash -i` Note the parameters. This reserves a single node for 1 hour, and expects to run one MPI task on the node. The `bash` keyword here indicates that a new shell will be started there, and the `-i` indicates it will be interactive. In some instances, e.g. when the cluster is particularly busy, this command will block for a period of time until a node becomes available, but most of the time, it will start fairly quickly. Depending on your needs, reducing the number of nodes requested or the amount of time requested may mean you session starts more quickly. 
+Falcon uses the slurm resource manager to meet the needs of multiple users sharing resources on the system. In it's simplest invocation, slurm can be called up to schedule an interactive job, wherein a user is able to allocate one or more compute nodes. ~~For example, the following one liner can used to launch a bash shell on a compute node: ` srun --nodes=1 --ntasks-per-node=1 --time=01:00:00 --pty bash -i` Note the parameters. This reserves a single node for 1 hour, and expects to run one MPI task on the node. The `bash` keyword here indicates that a new shell will be started there, and the `-i` indicates it will be interactive.~~ (srun integration not currently implemented) 
+
+To launch an interactive session:
+```$ /lfs/software/bin/interactive-session ```
+
+This will give a single-node interactive session without a default duration of 12 hours.  In some instances, e.g. when the cluster is particularly busy, this command will block for a period of time until a node becomes available, but most of the time, it will start fairly quickly. Depending on your needs, reducing the number of hours (specify `-t time-in-hours`) requested may mean your session starts more quickly. 
 
 Interactive sessions are particularly useful for debugging scripts that will eventually be run as batch jobs. Use an interactive session to run a job at smaller scale and for a shorter time, and once you feel confident that the script is running as intended, you can convert to a batch job. Note that a batch script can be run while in this interactive mode simply by sourcing it, i.e. 
 
